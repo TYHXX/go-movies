@@ -1,9 +1,8 @@
-import React, { Component, Fragment } from "react";
+import React, {useState, useEffect, Fragment} from 'react'
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import Admin from "./components/Admin";
 import Home from "./components/Home";
-// import EditMovie from "./components/EditMovie";
-// import Login from "./components/Login";
+
 import GraphQL from "./components/GraphQL";
 import MoviesFunc from "./components/MoviesFunc";
 import GenresFunc from "./components/GenresFunc";
@@ -12,47 +11,40 @@ import OneGenreFunc from "./components/OneGenreFunc";
 import EditMovieFunc from "./components/EditMovieFunc";
 import LoginFunc from "./components/LoginFunc";
 
-export default class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      jwt: "",
-    };
-    this.handleJWTChange(this.handleJWTChange.bind(this));
-  }
+export default function AppFunc(props) {
+    const [jwt, setJWT] = useState("");
 
-  componentDidMount() {
-    let t = window.localStorage.getItem("jwt");
-    if (t) {
-      if (this.state.jwt === "") {
-        this.setState({jwt: JSON.parse(t)});
-      }
+    useEffect(() => {
+        let t = window.localStorage.getItem("jwt");
+        if (t) {
+            if (jwt === "") {
+                setJWT(JSON.parse(t));
+            }
+        }
+    }, [jwt])
+
+    function handleJWTChange(jwt) {
+        setJWT(jwt);
     }
-  }
 
-  handleJWTChange = (jwt) => {
-    this.setState({ jwt: jwt });
-  };
+    function logout() {
+        setJWT("");
+        window.localStorage.removeItem("jwt");
+    }
 
-  logout = () => {
-    this.setState({ jwt: "" });
-    window.localStorage.removeItem("jwt");
-  };
-
-  render() {
     let loginLink;
-    if (this.state.jwt === "") {
-      loginLink = <Link to="/login">Login</Link>;
+    if (jwt === "") {
+        loginLink = <Link to="/login">Login</Link>;
     } else {
-      loginLink = (
-        <Link to="/logout" onClick={this.logout}>
-          Logout
-        </Link>
-      );
+        loginLink = (
+            <Link to="/logout" onClick={logout}>
+            Logout
+            </Link>
+        );
     }
 
     return (
-      <Router>
+        <Router>
         <div className="container">
           <div className="row">
             <div className="col mt-3">
@@ -75,7 +67,7 @@ export default class App extends Component {
                   <li className="list-group-item">
                     <Link to="/genres">Genres</Link>
                   </li>
-                  {this.state.jwt !== "" && (
+                  {jwt !== "" && (
                     <Fragment>
                       <li className="list-group-item">
                         <Link to="/admin/movie/0">Add movie</Link>
@@ -106,7 +98,7 @@ export default class App extends Component {
                   exact
                   path="/login"
                   component={(props) => (
-                    <LoginFunc {...props} handleJWTChange={this.handleJWTChange} />
+                    <LoginFunc {...props} handleJWTChange={handleJWTChange} />
                   )}
                 />
 
@@ -121,14 +113,14 @@ export default class App extends Component {
                 <Route
                   path="/admin/movie/:id"
                   component={(props) => (
-                    <EditMovieFunc {...props} jwt={this.state.jwt} />
+                    <EditMovieFunc {...props} jwt={jwt} />
                   )}
                 />
 
                 <Route
                   path="/admin"
                   component={(props) => (
-                    <Admin {...props} jwt={this.state.jwt} />
+                    <Admin {...props} jwt={jwt} />
                   )}
                 />
 
@@ -141,5 +133,4 @@ export default class App extends Component {
         </div>
       </Router>
     );
-  }
 }
